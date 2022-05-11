@@ -1,0 +1,7 @@
+{
+  "name": "PKU Daily Limitter",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
