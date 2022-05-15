@@ -1,0 +1,39 @@
+.pie_chart_block {
+    padding: 20px 50px;
+}
+
+.pie_chart_block svg {
+    max-height: 300px;
+    transform: rotate(90deg);
+}
+
+.pie_chart_block ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-left: 0;
+}
+
+.pie_chart_block ul li {
+    display: block;
+    text-align: left;
+    padding: 5px;
+    border-radius: 10px;
+    margin: 2px;
+}
+
+.pie_chart--main_stat {
+    position: absolute;
+    left: 50%;
+    top: 200px;
+    transform: translate(-50%, 0);
+    text-align: center;
+}
+
+.pie_chart--main_stat h1 {
+    font-size: 30px;
+}
+
+.pie_chart--main_stat h1 > span {
+    font-size: 18px;
+}

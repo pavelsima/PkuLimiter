@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "PKU Daily Limitter",
+	"webDir": "build",
+	"bundledWebRuntime": false
+}
