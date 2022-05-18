@@ -1,4 +1,10 @@
 
+export type SeparateDishes = {
+  name: string;
+  phe: number;
+  time: string;
+}
+
 export type TodayDataStat = {
   key: string;
   title: string;
@@ -6,4 +12,5 @@ export type TodayDataStat = {
   phe: number;
   protein: number;
   color: string;
+  dishes: SeparateDishes[];
 }

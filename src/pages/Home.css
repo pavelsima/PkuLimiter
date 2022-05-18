@@ -19,14 +19,18 @@
     text-align: left;
     padding: 5px;
     border-radius: 10px;
-    margin: 2px;
+    margin: 3px 4px;
 }
 
 .pie_chart--main_stat {
     position: absolute;
     left: 50%;
-    top: 200px;
+    top: 150px;
     transform: translate(-50%, 0);
+    text-align: center;
+}
+
+.meal-info {
     text-align: center;
 }
 
@@ -36,4 +40,20 @@
 
 .pie_chart--main_stat h1 > span {
     font-size: 18px;
+}
+
+.breakfast-button {
+    --background: #EC0868;
+}
+
+.lunch-button {
+    --background: #C200FB;
+}
+
+.dinner-button {
+    --background: #FC2F00;
+}
+
+.snacks-button {
+    --background: #428cff;
 }

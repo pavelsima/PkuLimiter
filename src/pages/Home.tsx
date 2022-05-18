@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, useIonViewWillEnter } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonGrid, IonRow, IonCol, IonButton, useIonViewWillEnter } from '@ionic/react';
 import { Storage } from '@capacitor/storage';
 import { PieChart } from 'react-minimal-pie-chart';
 import moment from 'moment';
@@ -11,6 +11,8 @@ import './Home.css';
 const Home: React.FC = () => {
   const [dailyPHELimit, setDailyPHELimit] = useState(500);
   const [PHEMultiplier, setPHEMultiplier] = useState(45);
+  const [showModal, setShowModal] = useState(false);
+  const [chosenMeal, setChosenMeal] = useState("");
   const [unit, setUnit] = useState("protein");
   const [remainingPHEData, setRemainingPHEData] = useState<TodayDataStat>({
     key: "empty",
@@ -19,13 +21,19 @@ const Home: React.FC = () => {
     phe: dailyPHELimit,
     protein: dailyPHELimit / PHEMultiplier,
     color: '#ffffff33',
+    dishes: [],
   })
   const [todayData, setTodayData] = useState<TodayDataStat[]>([
-    { key: MealsMap.Breakfast, title: 'Breakfast', value: 0, phe: 0, protein: 0, color: '#EC0868' },
-    { key: MealsMap.Lunch, title: 'Lunch', value: 0, phe: 0, protein: 0, color: '#C200FB' },
-    { key: MealsMap.Dinner, title: 'Dinner', value: 0, phe: 0, protein: 0, color: '#FC2F00' },
-    { key: MealsMap.Snacks, title: 'Snacks', value: 0, phe: 0, protein: 0, color: '#428cff' },
+    { key: MealsMap.Breakfast, title: 'Breakfast', value: 0, phe: 0, protein: 0, color: '#EC0868', dishes: [] },
+    { key: MealsMap.Lunch, title: 'Lunch', value: 0, phe: 0, protein: 0, color: '#C200FB', dishes: [] },
+    { key: MealsMap.Dinner, title: 'Dinner', value: 0, phe: 0, protein: 0, color: '#FC2F00', dishes: [] },
+    { key: MealsMap.Snacks, title: 'Snacks', value: 0, phe: 0, protein: 0, color: '#428cff', dishes: [] },
   ]);
+
+  const addMeal = (key: string) => {
+    setChosenMeal(key);
+    setShowModal(true);
+  }
 
   const refreshRemainingPHEData = () => {
     const totalPheToday = todayData.map((stat: TodayDataStat) => stat.phe)
@@ -38,6 +46,7 @@ const Home: React.FC = () => {
       phe: remainingPHE,
       protein: remainingPHE / PHEMultiplier,
       color: '#ffffff33',
+      dishes: [],
     });
     console.log(remainingPHE, totalPheToday);
   }
@@ -136,8 +145,29 @@ const Home: React.FC = () => {
             })}
           </ul>
         </div>
+        <IonGrid>
+          <IonRow>
+            <IonCol>
+              <IonButton className="breakfast-button" expand="block" onClick={() => addMeal('breakfast')}>Add Breakfast</IonButton>
+            </IonCol>
+            <IonCol>
+              <IonButton className="lunch-button" expand="block" onClick={() => addMeal('lunch')}>Add Lunch</IonButton>
+            </IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol>
+              <IonButton className="dinner-button" expand="block" onClick={() => addMeal('dinner')}>Add Dinner</IonButton>
+            </IonCol>
+            <IonCol>
+              <IonButton className="snacks-button" expand="block" onClick={() => addMeal('snacks')}>Add Snacks</IonButton>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
         <AddMealComponent
+          showModal={showModal}
+          setShowModal={setShowModal}
           todayData={todayData}
+          chosenMeal={chosenMeal}
           unit={unit}
           PHEMultiplier={PHEMultiplier}
           dailyPHELimit={dailyPHELimit}
