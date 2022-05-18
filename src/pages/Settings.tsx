@@ -88,7 +88,7 @@ const Settings: React.FC = () => {
                 <IonRange pin={true} value={PHEMultiplier} min={20} step={1} max={64.5} onIonChange={e => saveData("PHEMultiplier", e.detail.value as number)} />
               </IonItem>
               <IonItem>
-                <IonLabel>{PHEMultiplier}x</IonLabel>
+                <IonLabel>{PHEMultiplier}x <span style={{ float: "right", }}>(based on <a href="https://engineering.purdue.edu/brl/PKU/PheEst0.pdf" target="_blank">this article</a>)</span></IonLabel>
               </IonItem>
             </>
           ) : null}

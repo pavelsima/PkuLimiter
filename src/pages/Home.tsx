@@ -145,6 +145,7 @@ const Home: React.FC = () => {
             })}
           </ul>
         </div>
+        <h2 className="new-meal-header">Add new meal</h2>
         <IonGrid>
           <IonRow>
             <IonCol>
