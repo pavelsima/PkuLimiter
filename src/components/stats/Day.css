@@ -1,0 +1,12 @@
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+  width: 100%;
+}
+.day-header .arrow-icon {
+  font-size: 45px;
+}
+.day-header h2 {
+  margin: 8px;
+}

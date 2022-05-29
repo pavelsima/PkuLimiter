@@ -3,7 +3,7 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonGrid, IonRow, 
 import { Storage } from '@capacitor/storage';
 import { PieChart } from 'react-minimal-pie-chart';
 import moment from 'moment';
-import AddMealComponent from "../components/AddMealComponent";
+import DishModal from "../components/DishModal";
 import { TodayDataStat } from "../types/todayData";
 import { MealsMap } from "../enums/enums"
 import './Home.css';
@@ -48,7 +48,6 @@ const Home: React.FC = () => {
       color: '#ffffff33',
       dishes: [],
     });
-    console.log(remainingPHE, totalPheToday);
   }
 
   const loadSavedPHEifExist = async () => {
@@ -118,7 +117,7 @@ const Home: React.FC = () => {
                       { unit === "protein" ? " g of protein" : " PHE" }
                     </span>
                   </h1>
-                  <p>Over the limit</p>
+                  <p>over the limit</p>
                 </span>
               )}
           </span>
@@ -164,7 +163,7 @@ const Home: React.FC = () => {
             </IonCol>
           </IonRow>
         </IonGrid>
-        <AddMealComponent
+        <DishModal
           showModal={showModal}
           setShowModal={setShowModal}
           todayData={todayData}

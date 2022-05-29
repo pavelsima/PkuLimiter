@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonModal, IonButton, IonButtons, IonRadioGroup, IonListHeader, IonLabel, IonRadio, IonItem, IonInput, useIonPicker } from '@ionic/react';
 import { TodayDataStat, SeparateDishes } from "../types/todayData";
 import moment from 'moment';
-import './AddMealComponent.css';
+import './DishModal.css';
 import { Storage } from '@capacitor/storage';
 import { MealsSizeMap, MealsMap } from "../enums/enums"
 
@@ -15,6 +15,7 @@ type Props = {
   unit: string;
   dailyPHELimit: number;
   PHEMultiplier: number;
+  editIndex?: number | undefined;
 }
 
 type PickerOption = {
@@ -22,7 +23,7 @@ type PickerOption = {
   value: number;
 }
 
-const AddMealComponent: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenMeal, todayData, unit, dailyPHELimit, PHEMultiplier }) => {
+const DishModal: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenMeal, todayData, unit, dailyPHELimit, PHEMultiplier, editIndex }) => {
   const [presentPicker] = useIonPicker();
   const [mealName, setMealName] = useState("");
   const [selectedAmount, setSelectedAmount] = useState(0);
@@ -48,17 +49,29 @@ const AddMealComponent: React.FC<Props> = ({ onChange, setShowModal, showModal, 
 
   const updateTodayData = () => {
     const updatedData = [...todayData];
-    const indexToUpdate = updatedData.findIndex((data: TodayDataStat) => data.key === chosenMeal);
-    const newDish: SeparateDishes = {
-      name: mealName,
-      phe: selectedAmount,
-      time: moment().format()
-    };
+    const dishIndexToUpdate = updatedData.findIndex((data: TodayDataStat) => data.key === chosenMeal);
 
-    updatedData[indexToUpdate].phe += selectedAmount;
-    updatedData[indexToUpdate].protein = updatedData[indexToUpdate].phe / PHEMultiplier;
-    updatedData[indexToUpdate].value = updatedData[indexToUpdate].phe / (dailyPHELimit / 100);
-    updatedData[indexToUpdate].dishes = [...updatedData[indexToUpdate].dishes, newDish];
+    if (typeof (editIndex) === "undefined") {
+      const newDish: SeparateDishes = {
+        name: mealName,
+        phe: selectedAmount,
+        time: moment().format()
+      };
+
+      updatedData[dishIndexToUpdate].phe += selectedAmount;
+      updatedData[dishIndexToUpdate].protein = updatedData[dishIndexToUpdate].phe / PHEMultiplier;
+      updatedData[dishIndexToUpdate].value = updatedData[dishIndexToUpdate].phe / (dailyPHELimit / 100);
+      updatedData[dishIndexToUpdate].dishes = [...updatedData[dishIndexToUpdate].dishes, newDish];
+    } else {
+      updatedData[dishIndexToUpdate].dishes[editIndex].name = mealName;
+      updatedData[dishIndexToUpdate].dishes[editIndex].phe = selectedAmount;
+
+      const mealPhe = updatedData[dishIndexToUpdate].dishes
+        .reduce((sum: number, dish: SeparateDishes) => sum + dish.phe, 0)
+      updatedData[dishIndexToUpdate].phe = mealPhe;
+      updatedData[dishIndexToUpdate].protein = mealPhe / PHEMultiplier;
+      updatedData[dishIndexToUpdate].value = mealPhe / (dailyPHELimit / 100);
+    }
     const todayDate = moment().format('DD-MM-YYYY');
 
     Storage.set({
@@ -66,6 +79,7 @@ const AddMealComponent: React.FC<Props> = ({ onChange, setShowModal, showModal, 
       value: JSON.stringify(updatedData),
     }).then(() => {
       onChange();
+      setMealName("");
       setShowModal(false);
     })
   }
@@ -78,7 +92,7 @@ const AddMealComponent: React.FC<Props> = ({ onChange, setShowModal, showModal, 
   const finalMealPreset = () => {
     const mealSize = MealsSizeMap[chosenMeal] || MealsSizeMap[MealsMap.Snacks];
     const optimalMealContent = (dailyPHELimit / 100) * mealSize;
-    return remainingPHE() > optimalMealContent ? optimalMealContent : remainingPHE();
+    return remainingPHE() > optimalMealContent || remainingPHE() === 0 ? optimalMealContent : remainingPHE();
   };
 
   const finalMealPresetWithUnit = () => unit === "protein" ? (finalMealPreset() / PHEMultiplier) : finalMealPreset()
@@ -118,7 +132,43 @@ const AddMealComponent: React.FC<Props> = ({ onChange, setShowModal, showModal, 
     });
   }
 
-  useEffect(() => setSelectedAmount(finalMealPreset()), [showModal])
+  const getRadioOptions = () => {
+    return [
+      {
+        label: `Small amount(${(finalMealPresetWithUnit() / 2).toFixed(1)} ${unit === "protein" ? "g" : "PHE"})`,
+        color: "secondary",
+        value: finalMealPreset() / 2
+      },
+      {
+        label: `Normal amount(${finalMealPresetWithUnit().toFixed(1)} ${unit === "protein" ? "g" : "PHE"})`,
+        color: "primary",
+        value: finalMealPreset()
+      },
+      {
+        label: `Big amount(${(finalMealPresetWithUnit() + (finalMealPresetWithUnit() / 2)).toFixed(1)} ${unit === "protein" ? "g" : "PHE"})`,
+        color: "tertiary",
+        value: finalMealPreset() + (finalMealPreset() / 2)
+      },
+    ];
+  }
+
+  const setDefaultData = () => {
+    if (typeof(editIndex) !== "undefined") {
+      const dataToPrefill = todayData.find(meal => meal.key === chosenMeal)?.dishes[editIndex];
+      const defaultPhe = dataToPrefill?.phe || finalMealPreset();
+      const radioOptions = getRadioOptions();
+      if (radioOptions.filter(option => option.value === defaultPhe).length === 0) {
+        setSelectedAmount(defaultPhe);
+        setCustomAmountBool(true);
+      }
+      setSelectedAmount(defaultPhe)
+      setMealName(dataToPrefill?.name || "");
+      return;
+    }
+    setSelectedAmount(finalMealPreset())
+  }
+
+  useEffect(() => setDefaultData(), [showModal])
 
   return (
     <>
@@ -153,20 +203,14 @@ const AddMealComponent: React.FC<Props> = ({ onChange, setShowModal, showModal, 
               <IonLabel>Amount of protein in meal</IonLabel>
             </IonListHeader>
 
-            <IonItem>
-              <IonLabel>Small amount ({(finalMealPresetWithUnit() / 2).toFixed(1)} {unit === "protein" ? "g" : "PHE"})</IonLabel>
-              <IonRadio onClick={() => setCustomAmountBool(false)} color="secondary" slot="end" value={(finalMealPreset() / 2)} />
-            </IonItem>
-
-            <IonItem>
-              <IonLabel>Normal amount ({finalMealPresetWithUnit().toFixed(1)} {unit === "protein" ? "g" : "PHE"})</IonLabel>
-              <IonRadio onClick={() => setCustomAmountBool(false)} color="primary" slot="end" value={finalMealPreset()} />
-            </IonItem>
-
-            <IonItem>
-              <IonLabel>Big amount ({(finalMealPresetWithUnit() + (finalMealPresetWithUnit() / 2)).toFixed(1)} {unit === "protein" ? "g" : "PHE"})</IonLabel>
-              <IonRadio onClick={() => setCustomAmountBool(false)} color="tertiary" slot="end" value={(finalMealPreset() + (finalMealPreset() / 2))} />
-            </IonItem>
+            {
+              getRadioOptions().map((option, i) => (
+                <IonItem key={i}>
+                  <IonLabel>{option.label}</IonLabel>
+                  <IonRadio onClick={() => setCustomAmountBool(false)} color={option.color} slot="end" value={option.value} />
+                </IonItem>
+              ))
+            }
 
             <IonItem>
               <IonLabel>
@@ -185,4 +229,4 @@ const AddMealComponent: React.FC<Props> = ({ onChange, setShowModal, showModal, 
   );
 };
 
-export default AddMealComponent;
+export default DishModal;
