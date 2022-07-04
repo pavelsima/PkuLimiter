@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonModal, IonButton, IonButtons, IonRadioGroup, IonListHeader, IonLabel, IonRadio, IonItem, IonInput, useIonPicker } from '@ionic/react';
-import { TodayDataStat, SeparateDishes } from "../types/todayData";
+import { TodayDataStat, Dish } from "../types/todayData";
 import moment from 'moment';
 import './DishModal.css';
 import { Storage } from '@capacitor/storage';
-import { MealsSizeMap, MealsMap } from "../enums/enums"
+import { MealsSizeMap, MealsMap, Units } from "../enums/enums"
 
 type Props = {
   onChange: any;
@@ -18,23 +18,24 @@ type Props = {
   editIndex?: number | undefined;
 }
 
-type PickerOption = {
-  text: string;
-  value: number;
-}
-
 const DishModal: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenMeal, todayData, unit, dailyPHELimit, PHEMultiplier, editIndex }) => {
   const [presentPicker] = useIonPicker();
   const [mealName, setMealName] = useState("");
   const [selectedAmount, setSelectedAmount] = useState(0);
   const [customAmount, setCustomAmountBool] = useState(false);
 
+  const todayDate = moment().format('DD-MM-YYYY');
+
+  // Custom input picker setting getter
   const getPickerOptions = () => {
     const emptyArray = Array(100).fill({});
 
     const resultData = emptyArray.map((dataOption: number, index: number) => {
       const value = (dailyPHELimit / 100) * index;
-      const showText = `${unit === "protein" ? (value / PHEMultiplier).toFixed(1) : value.toFixed(1)} ${unit === "protein" ? "g" : "PHE"}`;
+      const valueInUnit = `${unit === Units.Protein ? (value / PHEMultiplier).toFixed(1) : value.toFixed(1)}`;
+      const unitLabel = `${unit === Units.Protein ? "g" : "PHE"}`;
+      const showText = `${valueInUnit} ${unitLabel}`;
+
       return {
         text: showText,
         selected: false,
@@ -45,57 +46,76 @@ const DishModal: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenM
     return resultData;
   }
 
-  const dataStat = () => todayData.find((dataStat: TodayDataStat) => dataStat.key === chosenMeal);
+  // Actual data for dish
+  const dishDataStat = () => todayData.find((dishDataStat: TodayDataStat) => dishDataStat.key === chosenMeal);
 
-  const updateTodayData = () => {
+  // Save data to local storage
+  const savePheData = async (data: TodayDataStat[]) => {
+    await Storage.set({
+      key: `${todayDate}PheData`,
+      value: JSON.stringify(data),
+    });
+    onChange();
+    setMealName("");
+    setShowModal(false);
+  }
+
+  // Add new meal to dish
+  const addNewDish = async (updatedData: TodayDataStat[], index: number) => {
+    const newDish: Dish = {
+      name: mealName,
+      phe: selectedAmount,
+      time: moment().format()
+    };
+
+    updatedData[index].phe += selectedAmount;
+    updatedData[index].protein = updatedData[index].phe / PHEMultiplier;
+    updatedData[index].value = updatedData[index].phe / (dailyPHELimit / 100);
+    updatedData[index].dishes.push(newDish);
+
+    await savePheData(updatedData);
+  };
+
+  // Save eddited dish
+  const editDish = async (updatedData: TodayDataStat[], index: number) => {
+    if (typeof editIndex === "undefined") return console.error("Cannot edit dish");
+
+    updatedData[index].dishes[editIndex].name = mealName;
+    updatedData[index].dishes[editIndex].phe = selectedAmount;
+    const mealPhe = updatedData[index].dishes
+      .reduce((sum: number, dish: Dish) => sum + dish.phe, 0)
+    updatedData[index].phe = mealPhe;
+    updatedData[index].protein = mealPhe / PHEMultiplier;
+    updatedData[index].value = mealPhe / (dailyPHELimit / 100);
+
+    await savePheData(updatedData);
+  };
+
+  // Handle saving of data
+  const updateData = async () => {
     const updatedData = [...todayData];
     const dishIndexToUpdate = updatedData.findIndex((data: TodayDataStat) => data.key === chosenMeal);
 
-    if (typeof (editIndex) === "undefined") {
-      const newDish: SeparateDishes = {
-        name: mealName,
-        phe: selectedAmount,
-        time: moment().format()
-      };
-
-      updatedData[dishIndexToUpdate].phe += selectedAmount;
-      updatedData[dishIndexToUpdate].protein = updatedData[dishIndexToUpdate].phe / PHEMultiplier;
-      updatedData[dishIndexToUpdate].value = updatedData[dishIndexToUpdate].phe / (dailyPHELimit / 100);
-      updatedData[dishIndexToUpdate].dishes = [...updatedData[dishIndexToUpdate].dishes, newDish];
-    } else {
-      updatedData[dishIndexToUpdate].dishes[editIndex].name = mealName;
-      updatedData[dishIndexToUpdate].dishes[editIndex].phe = selectedAmount;
-
-      const mealPhe = updatedData[dishIndexToUpdate].dishes
-        .reduce((sum: number, dish: SeparateDishes) => sum + dish.phe, 0)
-      updatedData[dishIndexToUpdate].phe = mealPhe;
-      updatedData[dishIndexToUpdate].protein = mealPhe / PHEMultiplier;
-      updatedData[dishIndexToUpdate].value = mealPhe / (dailyPHELimit / 100);
+    if (typeof editIndex === "undefined") {
+      await addNewDish(updatedData, dishIndexToUpdate);
+      return;
     }
-    const todayDate = moment().format('DD-MM-YYYY');
-
-    Storage.set({
-      key: `${todayDate}PheData`,
-      value: JSON.stringify(updatedData),
-    }).then(() => {
-      onChange();
-      setMealName("");
-      setShowModal(false);
-    })
-  }
+    editDish(updatedData, dishIndexToUpdate)
+  };
 
   const totalPheToday = () => todayData.map((stat: TodayDataStat) => stat.phe)
     .reduce((total: number, pheStat: number, index: number) => total + pheStat, 0);
 
   const remainingPHE = () => dailyPHELimit - totalPheToday() > 0 ? dailyPHELimit - totalPheToday() : 0;
 
+  // Remaining amount of PHE to be allocated
   const finalMealPreset = () => {
     const mealSize = MealsSizeMap[chosenMeal] || MealsSizeMap[MealsMap.Snacks];
     const optimalMealContent = (dailyPHELimit / 100) * mealSize;
     return remainingPHE() > optimalMealContent || remainingPHE() === 0 ? optimalMealContent : remainingPHE();
   };
 
-  const finalMealPresetWithUnit = () => unit === "protein" ? (finalMealPreset() / PHEMultiplier) : finalMealPreset()
+  const finalMealPresetWithUnit = () => unit === Units.Protein ? (finalMealPreset() / PHEMultiplier) : finalMealPreset()
 
   const setCustomAmount = () => {
     const pickerOptions = getPickerOptions();
@@ -135,17 +155,17 @@ const DishModal: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenM
   const getRadioOptions = () => {
     return [
       {
-        label: `Small amount(${(finalMealPresetWithUnit() / 2).toFixed(1)} ${unit === "protein" ? "g" : "PHE"})`,
+        label: `Small amount(${(finalMealPresetWithUnit() / 2).toFixed(1)} ${unit === Units.Protein ? "g" : "PHE"})`,
         color: "secondary",
         value: finalMealPreset() / 2
       },
       {
-        label: `Normal amount(${finalMealPresetWithUnit().toFixed(1)} ${unit === "protein" ? "g" : "PHE"})`,
+        label: `Normal amount(${finalMealPresetWithUnit().toFixed(1)} ${unit === Units.Protein ? "g" : "PHE"})`,
         color: "primary",
         value: finalMealPreset()
       },
       {
-        label: `Big amount(${(finalMealPresetWithUnit() + (finalMealPresetWithUnit() / 2)).toFixed(1)} ${unit === "protein" ? "g" : "PHE"})`,
+        label: `Big amount(${(finalMealPresetWithUnit() + (finalMealPresetWithUnit() / 2)).toFixed(1)} ${unit === Units.Protein ? "g" : "PHE"})`,
         color: "tertiary",
         value: finalMealPreset() + (finalMealPreset() / 2)
       },
@@ -178,7 +198,7 @@ const DishModal: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenM
         presentingElement={undefined}>
           <IonHeader translucent>
             <IonToolbar>
-              <IonTitle>What did you had for {dataStat()?.key}?</IonTitle>
+              <IonTitle>What did you had for {dishDataStat()?.key}?</IonTitle>
               <IonButtons slot="end">
                 <IonButton onClick={() => setShowModal(false)}>Close</IonButton>
               </IonButtons>
@@ -186,8 +206,10 @@ const DishModal: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenM
           </IonHeader>
           <IonContent fullscreen>
           <p className="meal-info">
-            {dataStat()?.value !== 0 ?
-              unit === "protein" ? `Already have ${dataStat()?.protein.toFixed(1)} g of protein.` : `Already have ${dataStat()?.phe.toFixed(1)} PHE.` : null
+            {dishDataStat()?.value !== 0 ?
+              unit === Units.Protein
+                ? `Already have ${dishDataStat()?.protein.toFixed(1)} g of protein.`
+                : `Already have ${dishDataStat()?.phe.toFixed(1)} PHE.` : null
             }
           </p>
 
@@ -214,7 +236,13 @@ const DishModal: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenM
 
             <IonItem>
               <IonLabel>
-                Custom amount {customAmount ? `(${unit === "protein" ? (selectedAmount / PHEMultiplier).toFixed(1) : selectedAmount.toFixed(1)} ${unit === "protein" ? "g" : "PHE"})` : null}
+                Custom amount {
+                  customAmount
+                    ? `(${unit === Units.Protein
+                      ? (selectedAmount / PHEMultiplier).toFixed(1)
+                      : selectedAmount.toFixed(1)} ${unit === Units.Protein ? "g" : "PHE"})`
+                    : null
+                }
               </IonLabel>
               <IonRadio onClick={() => setCustomAmount()} color="tertiary" slot="end" value={customAmount ? selectedAmount : null} />
             </IonItem>
@@ -222,7 +250,7 @@ const DishModal: React.FC<Props> = ({ onChange, setShowModal, showModal, chosenM
 
           <p></p>
 
-          <IonButton expand="block" onClick={() => updateTodayData()}>Submit</IonButton>
+          <IonButton expand="block" onClick={() => updateData()}>Submit</IonButton>
           </IonContent>
       </IonModal>
     </>

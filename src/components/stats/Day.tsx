@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react';
-import { IonButton, IonBadge, IonLabel, IonList, IonItem, IonListHeader, IonIcon, useIonViewWillEnter } from '@ionic/react';
-import { TodayDataStat, SeparateDishes } from "../../types/todayData";
+import {
+  IonButton,
+  IonBadge,
+  IonLabel,
+  IonList,
+  IonItem,
+  IonListHeader,
+  IonIcon,
+  useIonViewWillEnter,
+} from '@ionic/react';
+import { TodayDataStat, Dish, DishStat } from "../../types/todayData";
 import { PieChart } from 'react-minimal-pie-chart';
 import moment from 'moment';
 import './Day.css';
 import { Storage } from '@capacitor/storage';
 import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
+import { Units } from "../../enums/enums"
 import DishModal from "../../components/DishModal";
 
-type SmallDishType = {
-  dishName: string;
-  dishPhe: number;
-  mealTitle: string;
-  mealColor: string;
-  mealType: string;
-  categoryIndex: number;
-}
 
 const DayStat: React.FC = () => {
   const [dayData, setDayData] = useState<TodayDataStat[] | undefined>();
@@ -26,9 +28,10 @@ const DayStat: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editIndex, setEditIndex] = useState(0);
   const [chosenMeal, setChosenMeal] = useState("");
-  const [allDishes, setAllDishes] = useState<SmallDishType[] | undefined>();
+  const [allDishes, setAllDishes] = useState<DishStat[] | undefined>();
   const [dataNotExisting, setDataNotExisting] = useState(false);
 
+  // Load data for set data
   const loadDayData = async () => {
     setDataNotExisting(false);
     const { value: storedTodayDay } = await Storage.get({ key: `${date}PheData` });
@@ -39,6 +42,7 @@ const DayStat: React.FC = () => {
     }
   };
 
+  // Load setting
   const loadSetting = async () => {
     const { value: storedPHELImit } = await Storage.get({ key: 'PHELimit' });
     const { value: storedMultiplier } = await Storage.get({ key: 'PHEMultiplier' });
@@ -48,11 +52,12 @@ const DayStat: React.FC = () => {
     if (storedUnit) setUnit(storedUnit);
   };
 
-  const updateAllDishes = () => {
+  // Method to prepare data for stat list
+  const prepareDishesForStats = () => {
     if (!dayData) return;
     const allDishesUnflatten = dayData.map((meal: TodayDataStat) => {
-      return meal.dishes.map((dish: SeparateDishes, index) => {
-        const dishData: SmallDishType = {
+      return meal.dishes.map((dish: Dish, index) => {
+        const dishData: DishStat = {
           dishName: dish.name,
           dishPhe: dish.phe,
           mealTitle: meal.title,
@@ -66,12 +71,13 @@ const DayStat: React.FC = () => {
     setAllDishes(Array.prototype.concat.apply([], allDishesUnflatten))
   }
 
+  //
   const totalPheToday = () => {
     return (dayData?.map((stat: TodayDataStat) => stat.phe) || [])
       .reduce((total: number, pheStat: number, index: number) => total + pheStat, 0);
   }
   const overLimitMainStat = () => {
-    return unit === "protein" ? (totalPheToday() - dailyPHELimit) / PHEMultiplier : totalPheToday() - dailyPHELimit
+    return unit === Units.Protein ? (totalPheToday() - dailyPHELimit) / PHEMultiplier : totalPheToday() - dailyPHELimit
   };
 
   const editDish = (mealType: string, editIndex: number) => {
@@ -81,7 +87,7 @@ const DayStat: React.FC = () => {
   }
 
   useEffect(() => {
-    updateAllDishes();
+    prepareDishesForStats();
   }, [dayData])
 
   useEffect(() => {
@@ -107,18 +113,18 @@ const DayStat: React.FC = () => {
             <span className="pie_chart--main_stat">
               <span>
                 <h1>
-                {unit === "protein"
+                {unit === Units.Protein
                   ? (totalPheToday() / PHEMultiplier).toFixed(1)
                   : totalPheToday().toFixed(1)}
                   <span>
-                    { unit === "protein" ? " g of protein" : " PHE" }
+                    { unit === Units.Protein ? " g of protein" : " PHE" }
                   </span>
                 </h1>
               {overLimitMainStat() > 0 ?
                 <p>
                   {overLimitMainStat().toFixed(1)}
                   <span>
-                    {unit === "protein" ? " g of protein " : " PHE "}
+                    {unit === Units.Protein ? " g of protein " : " PHE "}
                   </span>
                 over the limit
               </p> : null}
@@ -152,16 +158,27 @@ const DayStat: React.FC = () => {
           </div>
       </IonListHeader>
       {!dataNotExisting ?
-          allDishes?.map((dish: SmallDishType, i: number) => {
+          allDishes?.map((dish: DishStat, i: number) => {
             return (
               <IonItem key={i} onClick={() => editDish(dish.mealType, dish.categoryIndex)}>
                 <IonLabel>
-                  {dish.dishName} <span style={
-                    { background: dish.mealColor, color: "#ffffff", padding: "3px", borderRadius: "5px", margin: "0 5px" }
-                  }>{dish.mealTitle}</span>
+                  {dish.dishName}
+                  <span style={{
+                    background: dish.mealColor,
+                    color: "#ffffff",
+                    padding: "3px",
+                    borderRadius: "5px",
+                    margin: "0 5px",
+                  }}>
+                    {dish.mealTitle}
+                  </span>
                 </IonLabel>
                 <IonBadge color="primary">
-                  {unit === "protein" ? `${(dish.dishPhe / PHEMultiplier).toFixed(1)} g` : `${dish.dishPhe.toFixed(1)} PHE`}
+                  {
+                    unit === Units.Protein
+                      ? `${(dish.dishPhe / PHEMultiplier).toFixed(1)} g`
+                      : `${dish.dishPhe.toFixed(1)} PHE`
+                  }
                 </IonBadge>
               </IonItem>
             )

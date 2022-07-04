@@ -1,27 +1,37 @@
 import { useState, useEffect } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonList, IonItem, IonSegment, IonSegmentButton, IonRange, IonLabel } from '@ionic/react';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonList,
+  IonItem,
+  IonSegment,
+  IonSegmentButton,
+  IonRange,
+  IonLabel,
+} from '@ionic/react';
 import { Storage } from '@capacitor/storage';
+import { StateMap } from "../types/settings";
+import { Units } from "../enums/enums"
 import './Settings.css';
-
-type stateMap = {
-    [key: string]: React.Dispatch<any>,
-};
 
 const Settings: React.FC = () => {
   const [dailyPHELimit, setDailyPHELimit] = useState(500);
   const [PHEMultiplier, setPHEMultiplier] = useState(45);
-  const [unit, setUnit] = useState("protein");
+  const [unit, setUnit] = useState(Units.Protein);
 
-  const setStateData = (key: string, value: number): void => {
-    const map: stateMap = {
-      PHELimit: setDailyPHELimit,
-      PHEMultiplier: setPHEMultiplier,
-      Unit: setUnit,
-    }
+  const stateSetters: StateMap = {
+    PHELimit: setDailyPHELimit,
+    PHEMultiplier: setPHEMultiplier,
+    Unit: setUnit,
+  };
 
-    map[key](value);
-  }
+  // Set data to state based on changed key
+  const setStateData = (key: string, value: number|string) => stateSetters[key](value);
 
+  // Load saved setting
   const loadSavedPHEifExist = async () => {
     const { value: storedPHELImit } = await Storage.get({ key: 'PHELimit' });
     const { value: storedMultiplier } = await Storage.get({ key: 'PHEMultiplier' });
@@ -32,7 +42,8 @@ const Settings: React.FC = () => {
     if (storedUnit) setUnit(storedUnit);
   }
 
-  const saveData = async (key: string, value: any) => {
+  // Save changed data
+  const saveData = async (key: string, value: number|string) => {
     setStateData(key, value);
     await Storage.set({
       key: key,
@@ -62,7 +73,14 @@ const Settings: React.FC = () => {
             <IonLabel>Set your daily PHE limit:</IonLabel>
           </IonItem>
           <IonItem>
-            <IonRange pin={true} value={dailyPHELimit} min={10} step={10} max={5000} onIonChange={e => saveData("PHELimit", e.detail.value as number)} />
+            <IonRange
+              pin={true}
+              value={dailyPHELimit}
+              min={10}
+              step={10}
+              max={5000}
+              onIonChange={e => saveData("PHELimit", e.detail.value as number)}
+            />
           </IonItem>
           <IonItem>
             <IonLabel>{dailyPHELimit} PHE</IonLabel>
@@ -85,10 +103,21 @@ const Settings: React.FC = () => {
                 <IonLabel>PHE/Protein multiplier:</IonLabel>
               </IonItem>
               <IonItem>
-                <IonRange pin={true} value={PHEMultiplier} min={20} step={1} max={64.5} onIonChange={e => saveData("PHEMultiplier", e.detail.value as number)} />
+                <IonRange
+                  pin={true}
+                  value={PHEMultiplier}
+                  min={20}
+                  step={1}
+                  max={64.5}
+                  onIonChange={e => saveData("PHEMultiplier", e.detail.value as number)}
+                />
               </IonItem>
               <IonItem>
-                <IonLabel>{PHEMultiplier}x <span style={{ float: "right", }}>(based on <a href="https://engineering.purdue.edu/brl/PKU/PheEst0.pdf" target="_blank">this article</a>)</span></IonLabel>
+                <IonLabel>
+                  {PHEMultiplier}x <span style={{ float: "right", }}>
+                    (based on <a href="https://engineering.purdue.edu/brl/PKU/PheEst0.pdf" target="_blank">this article</a>)
+                  </span>
+                </IonLabel>
               </IonItem>
             </>
           ) : null}

@@ -1,8 +1,17 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonText, IonSegment, IonSegmentButton, IonLabel } from '@ionic/react';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel,
+} from '@ionic/react';
 import { useState, useEffect } from 'react';
-import { TodayDataStat } from "../types/todayData";
 import Day from "../components/stats/Day";
 import Week from "../components/stats/Week";
+import { StatTypes } from "../enums/enums";
 import './Stats.css';
 
 const Stats: React.FC = () => {
@@ -16,10 +25,10 @@ const Stats: React.FC = () => {
         </IonToolbar>
         <IonToolbar>
           <IonSegment value={segment} onIonChange={e => setSegment(e.detail.value)}>
-            <IonSegmentButton value="day">
+            <IonSegmentButton value={StatTypes.Day}>
               <IonLabel>Day</IonLabel>
             </IonSegmentButton>
-            <IonSegmentButton value="week">
+            <IonSegmentButton value={StatTypes.Week}>
               <IonLabel>Week</IonLabel>
             </IonSegmentButton>
           </IonSegment>
@@ -31,8 +40,8 @@ const Stats: React.FC = () => {
             <IonTitle size="large">Stats</IonTitle>
           </IonToolbar>
         </IonHeader>
-        {segment === "day" ? <Day /> : null}
-        {segment === "week" ? <Week /> : null}
+        {segment === StatTypes.Day ? <Day /> : null}
+        {segment === StatTypes.Week ? <Week /> : null}
       </IonContent>
     </IonPage>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonModal, IonButton, IonButtons, IonRadioGroup, IonBadge, IonLabel, IonList, IonItem, IonListHeader, IonIcon } from '@ionic/react';
-import { TodayDataStat, SeparateDishes } from "../../types/todayData";
+import { TodayDataStat, Dish } from "../../types/todayData";
 import { PieChart } from 'react-minimal-pie-chart';
 import moment from 'moment';
 import './Week.css';
