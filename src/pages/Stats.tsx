@@ -8,14 +8,14 @@ import {
   IonSegmentButton,
   IonLabel,
 } from '@ionic/react';
-import { useState, useEffect } from 'react';
-import Day from "../components/stats/Day";
-import Week from "../components/stats/Week";
-import { StatTypes } from "../enums/enums";
+import React, { useState, useEffect } from 'react';
+import Day from '../components/stats/Day';
+import Week from '../components/stats/Week';
+import { StatTypes } from '../enums/enums';
 import './Stats.css';
 
 const Stats: React.FC = () => {
-  const [segment, setSegment] = useState<string | undefined>("day");
+  const [segment, setSegment] = useState<string | undefined>('day');
 
   return (
     <IonPage>
@@ -24,7 +24,7 @@ const Stats: React.FC = () => {
           <IonTitle>Stats</IonTitle>
         </IonToolbar>
         <IonToolbar>
-          <IonSegment value={segment} onIonChange={e => setSegment(e.detail.value)}>
+          <IonSegment value={segment} onIonChange={(e) => setSegment(e.detail.value)}>
             <IonSegmentButton value={StatTypes.Day}>
               <IonLabel>Day</IonLabel>
             </IonSegmentButton>

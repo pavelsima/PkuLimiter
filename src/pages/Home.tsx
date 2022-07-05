@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -14,38 +14,46 @@ import {
 import { Storage } from '@capacitor/storage';
 import { PieChart } from 'react-minimal-pie-chart';
 import moment from 'moment';
-import DishModal from "../components/DishModal";
-import { TodayDataStat } from "../types/todayData";
-import { MealsMap, Units } from "../enums/enums"
+import DishModal from '../components/DishModal';
+import { TodayDataStat } from '../types/todayData';
+import { MealsMap, Units } from '../enums/enums';
 import './Home.css';
 
 const Home: React.FC = () => {
   const [dailyPHELimit, setDailyPHELimit] = useState(500);
   const [PHEMultiplier, setPHEMultiplier] = useState(45);
   const [showModal, setShowModal] = useState(false);
-  const [chosenMeal, setChosenMeal] = useState("");
+  const [chosenMeal, setChosenMeal] = useState('');
   const [unit, setUnit] = useState(Units.Protein);
   const [remainingPHEData, setRemainingPHEData] = useState<TodayDataStat>({
-    key: "empty",
+    key: 'empty',
     title: 'Remaining PHE',
     value: 100,
     phe: dailyPHELimit,
     protein: dailyPHELimit / PHEMultiplier,
     color: '#ffffff33',
     dishes: [],
-  })
+  });
   const [todayData, setTodayData] = useState<TodayDataStat[]>([
-    { key: MealsMap.Breakfast, title: 'Breakfast', value: 0, phe: 0, protein: 0, color: '#EC0868', dishes: [] },
-    { key: MealsMap.Lunch, title: 'Lunch', value: 0, phe: 0, protein: 0, color: '#C200FB', dishes: [] },
-    { key: MealsMap.Dinner, title: 'Dinner', value: 0, phe: 0, protein: 0, color: '#FC2F00', dishes: [] },
-    { key: MealsMap.Snacks, title: 'Snacks', value: 0, phe: 0, protein: 0, color: '#428cff', dishes: [] },
+    {
+      key: MealsMap.Breakfast, title: 'Breakfast', value: 0, phe: 0, protein: 0, color: '#EC0868', dishes: [],
+    },
+    {
+      key: MealsMap.Lunch, title: 'Lunch', value: 0, phe: 0, protein: 0, color: '#C200FB', dishes: [],
+    },
+    {
+      key: MealsMap.Dinner, title: 'Dinner', value: 0, phe: 0, protein: 0, color: '#FC2F00', dishes: [],
+    },
+    {
+      key: MealsMap.Snacks, title: 'Snacks', value: 0, phe: 0, protein: 0, color: '#428cff', dishes: [],
+    },
   ]);
 
   // Set modal meal and open modal
   const addMeal = (key: string) => {
     setChosenMeal(key);
     setShowModal(true);
-  }
+  };
 
   // Refresh empty (remaining) amount from the day
   const refreshRemainingPHEData = () => {
@@ -54,7 +62,7 @@ const Home: React.FC = () => {
     const remainingPHE = dailyPHELimit <= totalPheToday ? 0 : dailyPHELimit - totalPheToday;
 
     setRemainingPHEData({
-      key: "empty",
+      key: 'empty',
       title: 'Remaining PHE',
       value: remainingPHE / (dailyPHELimit / 100),
       phe: remainingPHE,
@@ -62,9 +70,9 @@ const Home: React.FC = () => {
       color: '#ffffff33',
       dishes: [],
     });
-  }
+  };
 
-  //Get data from local storage
+  // Get data from local storage
   const loadSavedPHEifExist = async () => {
     const todayDate = moment().format('DD-MM-YYYY');
 
@@ -86,7 +94,7 @@ const Home: React.FC = () => {
   const overLimitMainStat = () => {
     const totalPheToday = todayData.map((stat: TodayDataStat) => stat.phe)
       .reduce((total: number, pheStat: number, index: number) => total + pheStat, 0);
-    return unit === Units.Protein ? (totalPheToday - dailyPHELimit) / PHEMultiplier : totalPheToday - dailyPHELimit
+    return unit === Units.Protein ? (totalPheToday - dailyPHELimit) / PHEMultiplier : totalPheToday - dailyPHELimit;
   };
 
   useIonViewWillEnter(() => {
@@ -95,11 +103,11 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     loadSavedPHEifExist();
-  }, [])
+  }, []);
 
   useEffect(() => {
     refreshRemainingPHEData();
-  }, [dailyPHELimit, PHEMultiplier, unit, todayData])
+  }, [dailyPHELimit, PHEMultiplier, unit, todayData]);
 
   return (
     <IonPage>
@@ -122,17 +130,17 @@ const Home: React.FC = () => {
                   <h1>
                     {remainingMainStat.toFixed(1)}
                     <span>
-                      { unit === Units.Protein ? " g of protein" : " PHE" }
+                      { unit === Units.Protein ? ' g of protein' : ' PHE' }
                     </span>
                   </h1>
                   <p>Remaining to the limit</p>
                 </>
               ) : (
-                <span style={{color: "#fc2f00"}}>
+                <span style={{ color: '#fc2f00' }}>
                   <h1>
                     {overLimitMainStat().toFixed(1)}
                     <span>
-                      { unit === Units.Protein ? " g of protein" : " PHE" }
+                      { unit === Units.Protein ? ' g of protein' : ' PHE' }
                     </span>
                   </h1>
                   <p>over the limit</p>
@@ -154,16 +162,24 @@ const Home: React.FC = () => {
           <ul>
             {[remainingPHEData, ...todayData].map((data, index) => {
               if (index !== 0) {
-                return <li style={{ background: data.color, color: "#ffffff" }} key={index}>
-                  <b>{data.title}: </b>
-                  {
+                return (
+                  <li style={{ background: data.color, color: '#ffffff' }} key={index}>
+                    <b>
+                      {data.title}
+                      :
+                      {' '}
+                    </b>
+                    {
                     unit === Units.Protein
                       ? data.protein.toFixed(1)
                       : data.phe.toFixed(1)
-                  } {
-                    unit === Units.Protein ? " g" : " PHE"
                   }
-                   </li>;
+                    {' '}
+                    {
+                    unit === Units.Protein ? ' g' : ' PHE'
+                  }
+                  </li>
+                );
               }
             })}
           </ul>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -13,8 +13,8 @@ import {
   IonLabel,
 } from '@ionic/react';
 import { Storage } from '@capacitor/storage';
-import { StateMap } from "../types/settings";
-import { Units } from "../enums/enums"
+import { StateMap } from '../types/settings';
+import { Units } from '../enums/enums';
 import './Settings.css';
 
 const Settings: React.FC = () => {
@@ -40,20 +40,20 @@ const Settings: React.FC = () => {
     if (storedPHELImit) setDailyPHELimit(+storedPHELImit);
     if (storedMultiplier) setPHEMultiplier(+storedMultiplier);
     if (storedUnit) setUnit(storedUnit);
-  }
+  };
 
   // Save changed data
   const saveData = async (key: string, value: number|string) => {
     setStateData(key, value);
     await Storage.set({
-      key: key,
+      key,
       value: `${value}`,
     });
-  }
+  };
 
   useEffect(() => {
     loadSavedPHEifExist();
-  }, [])
+  }, []);
 
   return (
     <IonPage>
@@ -74,20 +74,24 @@ const Settings: React.FC = () => {
           </IonItem>
           <IonItem>
             <IonRange
-              pin={true}
+              pin
               value={dailyPHELimit}
               min={10}
               step={10}
               max={5000}
-              onIonChange={e => saveData("PHELimit", e.detail.value as number)}
+              onIonChange={(e) => saveData('PHELimit', e.detail.value as number)}
             />
           </IonItem>
           <IonItem>
-            <IonLabel>{dailyPHELimit} PHE</IonLabel>
+            <IonLabel>
+              {dailyPHELimit}
+              {' '}
+              PHE
+            </IonLabel>
           </IonItem>
 
           <IonItem>
-            <IonSegment value={unit} onIonChange={e => saveData("Unit", e.detail.value)}>
+            <IonSegment value={unit} onIonChange={(e) => saveData('Unit', e.detail.value as string)}>
               <IonSegmentButton value="protein">
                 <IonLabel>Protein</IonLabel>
               </IonSegmentButton>
@@ -97,25 +101,30 @@ const Settings: React.FC = () => {
             </IonSegment>
           </IonItem>
 
-          {unit === "protein" ? (
+          {unit === 'protein' ? (
             <>
               <IonItem>
                 <IonLabel>PHE/Protein multiplier:</IonLabel>
               </IonItem>
               <IonItem>
                 <IonRange
-                  pin={true}
+                  pin
                   value={PHEMultiplier}
                   min={20}
                   step={1}
                   max={64.5}
-                  onIonChange={e => saveData("PHEMultiplier", e.detail.value as number)}
+                  onIonChange={(e) => saveData('PHEMultiplier', e.detail.value as number)}
                 />
               </IonItem>
               <IonItem>
                 <IonLabel>
-                  {PHEMultiplier}x <span style={{ float: "right", }}>
-                    (based on <a href="https://engineering.purdue.edu/brl/PKU/PheEst0.pdf" target="_blank">this article</a>)
+                  {PHEMultiplier}
+                  x
+                  <span style={{ float: 'right' }}>
+                    (based on
+                    {' '}
+                    <a href="https://engineering.purdue.edu/brl/PKU/PheEst0.pdf" target="_blank" rel="noreferrer">this article</a>
+                    )
                   </span>
                 </IonLabel>
               </IonItem>

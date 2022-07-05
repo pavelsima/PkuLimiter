@@ -1,4 +1,3 @@
-
 export type Dish = {
   name: string;
   phe: number;
