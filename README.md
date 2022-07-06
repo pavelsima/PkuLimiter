@@ -67,16 +67,25 @@ For deveoplment on phone (emulator) please follow the instructions on ionicframe
 
 ## 🔧 Tests <a name = "tests"></a>
 
-No tests here now, planing implement Cypress for end-to-end testing.
-
+There are simple Cypress tests for basic functionality.
+You can run them by command
+```
+yarn cypress:headless
+```
+And to modify and add new tests just run the following command
+```
+yarn cypress
+```
+I am planing to add cypress tests to github actions - for now it is in [TODO](#todo)
 ## 📋 TODO <a name = "todo"></a>
 
 - PDF exports
-- Week stats
+- Week statistics
 - Release Android Application
 - Release iOS Application
 - Finish implementing eslint
-- Cypress
+- Cypress Github actions
+- ✅ ~~Cypress tests~~
 
 
 ## ⛏️ Built Using <a name = "built_using"></a>

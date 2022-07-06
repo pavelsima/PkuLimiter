@@ -99,7 +99,7 @@ const DayStat: React.FC = () => {
         {dataNotExisting
           ? (
             <div className="pie_chart_block">
-              <p className="stats_error_message">There are no data.</p>
+              <p data-cy="day-stats-empty" className="stats_error_message">There are no data.</p>
             </div>
           ) : (
             <>

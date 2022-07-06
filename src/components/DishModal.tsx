@@ -242,7 +242,11 @@ const DishModal: React.FC<Props> = ({
           <IonLabel>Meal name</IonLabel>
         </IonListHeader>
         <IonItem>
-          <IonInput value={mealName} onIonChange={(e) => setMealName(e.detail.value!)} />
+          <IonInput
+            value={mealName}
+            data-cy="meal-name-input"
+            onIonChange={(e) => setMealName(e.detail.value!)}
+          />
         </IonItem>
 
         <IonRadioGroup
@@ -261,6 +265,7 @@ const DishModal: React.FC<Props> = ({
                     onClick={() => setCustomAmountBool(false)}
                     color={option.color}
                     slot="end"
+                    data-cy={`meal-modal-radio-value-${option.value}`}
                     value={option.value}
                   />
                 </IonItem>
@@ -283,6 +288,7 @@ const DishModal: React.FC<Props> = ({
               onClick={() => setCustomAmount()}
               color="tertiary"
               slot="end"
+              data-cy="meal-modal-radio-value-custom"
               value={customAmount ? selectedAmount : null}
             />
           </IonItem>
@@ -290,7 +296,10 @@ const DishModal: React.FC<Props> = ({
 
         <p />
 
-        <IonButton expand="block" onClick={() => updateData()}>Submit</IonButton>
+        <IonButton
+          expand="block"
+          data-cy="add-meal-submit-button"
+          onClick={() => updateData()}>Submit</IonButton>
       </IonContent>
     </IonModal>
   );

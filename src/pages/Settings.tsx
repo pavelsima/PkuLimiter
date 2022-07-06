@@ -59,18 +59,18 @@ const Settings: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Settings</IonTitle>
+          <IonTitle data-cy="header-settings">Settings</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">Settings</IonTitle>
+            <IonTitle data-cy="header-settings" size="large">Settings</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonList>
           <IonItem>
-            <IonLabel>Set your daily PHE limit:</IonLabel>
+            <IonLabel data-cy="phe-limit-label">Set your daily PHE limit:</IonLabel>
           </IonItem>
           <IonItem>
             <IonRange
@@ -79,11 +79,12 @@ const Settings: React.FC = () => {
               min={10}
               step={10}
               max={5000}
+              data-cy="phe-limit-input"
               onIonChange={(e) => saveData('PHELimit', e.detail.value as number)}
             />
           </IonItem>
           <IonItem>
-            <IonLabel>
+            <IonLabel data-cy="phe-limit-selected-amount">
               {dailyPHELimit}
               {' '}
               PHE
@@ -92,10 +93,10 @@ const Settings: React.FC = () => {
 
           <IonItem>
             <IonSegment value={unit} onIonChange={(e) => saveData('Unit', e.detail.value as string)}>
-              <IonSegmentButton value="protein">
+              <IonSegmentButton data-cy="unit-segment-protein-button" value="protein">
                 <IonLabel>Protein</IonLabel>
               </IonSegmentButton>
-              <IonSegmentButton value="PHE">
+              <IonSegmentButton data-cy="unit-segment-phe-button" value="PHE">
                 <IonLabel>PHE</IonLabel>
               </IonSegmentButton>
             </IonSegment>
@@ -104,7 +105,7 @@ const Settings: React.FC = () => {
           {unit === 'protein' ? (
             <>
               <IonItem>
-                <IonLabel>PHE/Protein multiplier:</IonLabel>
+                <IonLabel data-cy="phe-multiplier-label">PHE/Protein multiplier:</IonLabel>
               </IonItem>
               <IonItem>
                 <IonRange
@@ -113,11 +114,12 @@ const Settings: React.FC = () => {
                   min={20}
                   step={1}
                   max={64.5}
+                   data-cy="phe-multiplier-input"
                   onIonChange={(e) => saveData('PHEMultiplier', e.detail.value as number)}
                 />
               </IonItem>
               <IonItem>
-                <IonLabel>
+                <IonLabel data-cy="phe-multiplier-selected-amount">
                   {PHEMultiplier}
                   x
                   <span style={{ float: 'right' }}>

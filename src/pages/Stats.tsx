@@ -21,14 +21,14 @@ const Stats: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Stats</IonTitle>
+          <IonTitle data-cy="header-stats">Stats</IonTitle>
         </IonToolbar>
         <IonToolbar>
           <IonSegment value={segment} onIonChange={(e) => setSegment(e.detail.value)}>
-            <IonSegmentButton value={StatTypes.Day}>
+            <IonSegmentButton data-cy="segment-buttons-day" value={StatTypes.Day}>
               <IonLabel>Day</IonLabel>
             </IonSegmentButton>
-            <IonSegmentButton value={StatTypes.Week}>
+            <IonSegmentButton data-cy="segment-buttons-week" value={StatTypes.Week}>
               <IonLabel>Week</IonLabel>
             </IonSegmentButton>
           </IonSegment>
@@ -37,7 +37,7 @@ const Stats: React.FC = () => {
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">Stats</IonTitle>
+            <IonTitle data-cy="header-stats" size="large">Stats</IonTitle>
           </IonToolbar>
         </IonHeader>
         {segment === StatTypes.Day ? <Day /> : null}

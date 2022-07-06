@@ -113,13 +113,13 @@ const Home: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Home</IonTitle>
+          <IonTitle data-cy="header-home">Home</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">Home</IonTitle>
+            <IonTitle data-cy="header-home" size="large">Home</IonTitle>
           </IonToolbar>
         </IonHeader>
         <div className="pie_chart_block">
@@ -127,7 +127,7 @@ const Home: React.FC = () => {
             {remainingMainStat !== 0
               ? (
                 <>
-                  <h1>
+                  <h1 data-cy="remaining-main-stat">
                     {remainingMainStat.toFixed(1)}
                     <span>
                       { unit === Units.Protein ? ' g of protein' : ' PHE' }
@@ -137,7 +137,7 @@ const Home: React.FC = () => {
                 </>
               ) : (
                 <span style={{ color: '#fc2f00' }}>
-                  <h1>
+                  <h1 data-cy="over-main-stat">
                     {overLimitMainStat().toFixed(1)}
                     <span>
                       { unit === Units.Protein ? ' g of protein' : ' PHE' }
@@ -169,15 +169,17 @@ const Home: React.FC = () => {
                       :
                       {' '}
                     </b>
-                    {
-                    unit === Units.Protein
-                      ? data.protein.toFixed(1)
-                      : data.phe.toFixed(1)
-                  }
-                    {' '}
-                    {
-                    unit === Units.Protein ? ' g' : ' PHE'
-                  }
+                    <span data-cy={`${data.title}-total-amount`}>
+                      {
+                        unit === Units.Protein
+                          ? data.protein.toFixed(1)
+                          : data.phe.toFixed(1)
+                      }
+                        {' '}
+                        {
+                        unit === Units.Protein ? ' g' : ' PHE'
+                      }
+                    </span>
                   </li>
                 );
               }
@@ -188,18 +190,46 @@ const Home: React.FC = () => {
         <IonGrid>
           <IonRow>
             <IonCol>
-              <IonButton className="breakfast-button" expand="block" onClick={() => addMeal('breakfast')}>Add Breakfast</IonButton>
+              <IonButton
+                className="breakfast-button"
+                expand="block"
+                data-cy="add-breakfast-button"
+                onClick={() => addMeal('breakfast')}
+              >
+                Add Breakfast
+              </IonButton>
             </IonCol>
             <IonCol>
-              <IonButton className="lunch-button" expand="block" onClick={() => addMeal('lunch')}>Add Lunch</IonButton>
+              <IonButton
+                className="lunch-button"
+                expand="block"
+                data-cy="add-lunch-button"
+                onClick={() => addMeal('lunch')}
+              >
+                Add Lunch
+              </IonButton>
             </IonCol>
           </IonRow>
           <IonRow>
             <IonCol>
-              <IonButton className="dinner-button" expand="block" onClick={() => addMeal('dinner')}>Add Dinner</IonButton>
+              <IonButton
+                className="dinner-button"
+                expand="block"
+                data-cy="add-dinner-button"
+                onClick={() => addMeal('dinner')}
+              >
+                Add Dinner
+              </IonButton>
             </IonCol>
             <IonCol>
-              <IonButton className="snacks-button" expand="block" onClick={() => addMeal('snacks')}>Add Snacks</IonButton>
+              <IonButton
+                className="snacks-button"
+                expand="block"
+                data-cy="add-snacks-button"
+                onClick={() => addMeal('snacks')}
+              >
+                Add Snacks
+              </IonButton>
             </IonCol>
           </IonRow>
         </IonGrid>
